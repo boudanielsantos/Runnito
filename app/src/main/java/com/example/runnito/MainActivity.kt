@@ -29,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.runnito.navigation.AppNavigation
 import com.example.runnito.navigation.ScreenRoutes
 import com.example.runnito.ui.theme.RunnitoTheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 
@@ -37,8 +38,7 @@ private val screens = listOf(
     ScreenRoutes.RegisteredEvents,
     ScreenRoutes.Profile
 )
-
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

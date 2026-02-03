@@ -1,4 +1,4 @@
-package com.example.runnito.screens
+package com.example.runnito.screens.registeredevents
 
 import androidx.compose.runtime.Composable
 

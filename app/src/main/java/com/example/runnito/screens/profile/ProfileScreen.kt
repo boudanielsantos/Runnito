@@ -1,4 +1,4 @@
-package com.example.runnito.screens
+package com.example.runnito.screens.profile
 
 import androidx.compose.runtime.Composable
 

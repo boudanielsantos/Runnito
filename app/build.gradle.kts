@@ -118,4 +118,10 @@ dependencies {
 
     implementation("androidx.hilt:hilt-work:1.3.0")
     ksp("androidx.hilt:hilt-compiler:1.3.0")
+
+    //Web Scraping
+    implementation("org.jsoup:jsoup:1.17.2")
+
+    //Lottie Animation
+    implementation("com.airbnb.android:lottie-compose:6.7.1")
 }
