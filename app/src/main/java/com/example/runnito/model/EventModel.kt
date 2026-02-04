@@ -13,7 +13,9 @@ data class EventModel(
     val year: String,
     val subtitle: String,
     val dateObj: Date?,
-    val url: String,
-    val distanceAvailable: List<Distance>? = null,
-    val registrationLink: String? = null
+    val eventDetailsUrl: String,
+    var distanceAvailable: List<Distance>? = null,
+    var registrationLink: String? = null,
+    var bannerUrl: String? = null,
+    var isDetailsPopulated: Boolean = false
 )

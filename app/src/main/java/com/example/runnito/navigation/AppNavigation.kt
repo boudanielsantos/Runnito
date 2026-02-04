@@ -1,5 +1,6 @@
 package com.example.runnito.navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -11,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.runnito.screens.eventdetails.EventDetailsScreen
+import com.example.runnito.screens.eventdetails.EventDetailsViewModel
 import com.example.runnito.screens.events.EventsScreen
 import com.example.runnito.screens.events.EventsViewModel
 import com.example.runnito.screens.profile.ProfileScreen
@@ -26,20 +28,21 @@ fun AppNavigation(navController: NavHostController, paddingValues: PaddingValues
         composable(ScreenRoutes.Events.route) {
             val eventsViewModel = hiltViewModel<EventsViewModel>()
 
-            EventsScreen(eventsViewModel, onNavigateToEventDetails = { eventUrl ->
-                navController.navigate(ScreenRoutes.EventDetails.route + "/$eventUrl")
+            EventsScreen(eventsViewModel, onNavigateToEventDetails = { eventId ->
+                navController.navigate(ScreenRoutes.EventDetails.route + "/$eventId")
             })
         }
         composable(ScreenRoutes.RegisteredEvents.route) { RegisteredEventsScreen() }
         composable(ScreenRoutes.Profile.route) { ProfileScreen() }
 
         composable(
-            route = ScreenRoutes.EventDetails.route + "/{eventUrl}",
-            arguments = listOf(navArgument("eventUrl") { type = NavType.StringType })
+            route = ScreenRoutes.EventDetails.route + "/{eventId}",
+            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val eventUrl = backStackEntry.arguments?.getString("eventUrl")
+            val eventId = backStackEntry.arguments?.getString("eventId")
+            val eventsDetailsViewModel = hiltViewModel<EventDetailsViewModel>()
 
-            EventDetailsScreen(eventUrl = eventUrl)
+            EventDetailsScreen(eventId = eventId, eventDetailsViewModel = eventsDetailsViewModel)
         }
     }
 }

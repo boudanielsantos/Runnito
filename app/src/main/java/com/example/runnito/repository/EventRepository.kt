@@ -10,6 +10,8 @@ class EventRepository @Inject constructor(val eventDao: EventDao) {
 
     fun getAllEvents(): Flow<List<EventModel>> = eventDao.getAllEvents()
 
+    fun getEventById(id: Int): Flow<EventModel> = eventDao.getCardById(id)
+
     suspend fun createEvent(event: EventModel) =
         eventDao.createEvent(event)
 

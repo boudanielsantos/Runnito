@@ -32,4 +32,6 @@ interface EventDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(events: List<EventModel>)
 
+    @Query("SELECT * FROM event_model WHERE id = :id")
+    fun getCardById(id: Int): Flow<EventModel>
 }

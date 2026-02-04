@@ -57,7 +57,7 @@ fun EventsScreen(viewModel: EventsViewModel, onNavigateToEventDetails: (String) 
                 selectedMonth = selectedMonth,
                 onMonthSelected = { selectedMonth = it }
             )
-            EventContent(filteredEvents, onNavigateToEventDetails)
+            EventContent(filteredEvents, onNavigateToEventDetails = onNavigateToEventDetails)
         }
     }
 
@@ -126,7 +126,7 @@ fun EventBanner(eventsList: List<EventModel>, onNavigateToEventDetails: (String)
             Card(
                 modifier = Modifier
                     .padding(16.dp)
-                    .clickable { onNavigateToEventDetails(event.url) }
+                    .clickable { onNavigateToEventDetails(event.id.toString()) }
 
             ) {
                 Box(

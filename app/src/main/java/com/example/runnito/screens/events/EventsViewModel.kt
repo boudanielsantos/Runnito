@@ -54,19 +54,14 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
                 }
 
                 if (scrapedEvents.isNotEmpty()) {
-                    // Get the current list of events from the database once
                     val existingEvents = eventRepository.getAllEvents().first()
 
-                    // Use a Set for efficient lookup of existing event URLs or titles
-                    val existingEventUrls = existingEvents.map { it.url }.toSet()
+                    val existingEventUrls = existingEvents.map { it.eventDetailsUrl }.toSet()
 
-                    // Filter out scraped events that are already in the database
-                    val newEvents = scrapedEvents.filter { it.url !in existingEventUrls }
+                    val newEvents = scrapedEvents.filter { it.eventDetailsUrl !in existingEventUrls }
 
-                    // If there are any new events, insert them
                     if (newEvents.isNotEmpty()) {
                         eventRepository.insertEvents(newEvents)
-                        // The flow collector in init{} will automatically update the UI
                     }
                 }
 
@@ -85,7 +80,7 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
             //Added user agent to to mimic a browser request
             val doc = Jsoup.connect(Constants.takboEventsUrl)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                .timeout(10000)
+                .timeout(50000)
                 .get()
 
             val eventElements = doc.select(".eventon_list_event")
@@ -124,7 +119,7 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
                             year = year,
                             subtitle = subtitle,
                             dateObj = parsedDate,
-                            url = eventUrl
+                            eventDetailsUrl = eventUrl
                         )
                     )
                 }
