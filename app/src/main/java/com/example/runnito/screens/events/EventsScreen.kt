@@ -2,7 +2,6 @@ package com.example.runnito.screens.events
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,12 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,20 +28,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.runnito.components.RunningManLoader
-import com.example.runnito.model.RunningEvent
-import com.example.runnito.utils.Constants
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.jsoup.Jsoup
-import java.text.SimpleDateFormat
-import java.util.Date
+import com.example.runnito.model.EventModel
 import java.util.Locale
 
 const val TAG = "EventsScreen"
 
 @Composable
-fun EventsScreen(viewModel: EventsViewModel) {
-    val eventsState = viewModel.runningEvents.collectAsStateWithLifecycle().value
+fun EventsScreen(viewModel: EventsViewModel, onNavigateToEventDetails: (String) -> Unit) {
+    val eventsState = viewModel.events.collectAsStateWithLifecycle().value
     var selectedMonth by remember { mutableStateOf<String?>(null) }
 
     val months = eventsState.data?.map { it.month }?.distinct()
@@ -66,12 +57,11 @@ fun EventsScreen(viewModel: EventsViewModel) {
                 selectedMonth = selectedMonth,
                 onMonthSelected = { selectedMonth = it }
             )
-            EventContent(filteredEvents)
+            EventContent(filteredEvents, onNavigateToEventDetails)
         }
     }
 
 }
-
 
 
 @Composable
@@ -124,20 +114,19 @@ fun MonthFilter(
 }
 
 
-
-
 @Composable
-fun EventContent(eventsList: List<RunningEvent>) {
-    EventBanner(eventsList)
+fun EventContent(eventsList: List<EventModel>, onNavigateToEventDetails: (String) -> Unit) {
+    EventBanner(eventsList, onNavigateToEventDetails)
 }
 
 @Composable
-fun EventBanner(eventsList: List<RunningEvent>) {
+fun EventBanner(eventsList: List<EventModel>, onNavigateToEventDetails: (String) -> Unit) {
     LazyColumn() {
         items(items = eventsList) { event ->
             Card(
                 modifier = Modifier
                     .padding(16.dp)
+                    .clickable { onNavigateToEventDetails(event.url) }
 
             ) {
                 Box(

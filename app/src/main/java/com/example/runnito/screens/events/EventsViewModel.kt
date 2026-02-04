@@ -4,52 +4,83 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.runnito.data.DataOrException
-import com.example.runnito.model.RunningEvent
+import com.example.runnito.model.EventModel
+import com.example.runnito.repository.EventRepository
 import com.example.runnito.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
+import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
-class EventsViewModel() : ViewModel() {
-    private val _runningEvents =
-        MutableStateFlow<DataOrException<List<RunningEvent>, Boolean, Exception>>(
+@HiltViewModel
+class EventsViewModel @Inject constructor(private val eventRepository: EventRepository) :
+    ViewModel() {
+    private val _events =
+        MutableStateFlow<DataOrException<List<EventModel>, Boolean, Exception>>(
             DataOrException(
                 listOf(),
                 true,
                 Exception("")
             )
         )
-    val runningEvents = _runningEvents.asStateFlow()
+    val events = _events.asStateFlow()
 
     init {
+        viewModelScope.launch(Dispatchers.IO) {
+            _events.value = _events.value.copy(loading = true)
+            eventRepository.getAllEvents().distinctUntilChanged().collect { eventsFromDb ->
+                _events.value = _events.value.copy(data = eventsFromDb, loading = false)
+            }
+        }
+        scrapeAndInsertNewEvents()
+    }
+
+    private fun scrapeAndInsertNewEvents() {
         viewModelScope.launch {
             try {
-                _runningEvents.value.loading = true
-                val scrapedEvents =
-                    withContext(Dispatchers.IO) {
-                        scrapeEvents()
-                    }
+                _events.value = _events.value.copy(loading = true, exception = null)
 
-                _runningEvents.value = _runningEvents.value.copy(
-                    data = scrapedEvents,
-                    loading = false,
-                    exception = null
-                )
+                // Scrape events from the web
+                val scrapedEvents = withContext(Dispatchers.IO) {
+                    scrapeEvents()
+                }
+
+                if (scrapedEvents.isNotEmpty()) {
+                    // Get the current list of events from the database once
+                    val existingEvents = eventRepository.getAllEvents().first()
+
+                    // Use a Set for efficient lookup of existing event URLs or titles
+                    val existingEventUrls = existingEvents.map { it.url }.toSet()
+
+                    // Filter out scraped events that are already in the database
+                    val newEvents = scrapedEvents.filter { it.url !in existingEventUrls }
+
+                    // If there are any new events, insert them
+                    if (newEvents.isNotEmpty()) {
+                        eventRepository.insertEvents(newEvents)
+                        // The flow collector in init{} will automatically update the UI
+                    }
+                }
+
+                _events.value = _events.value.copy(loading = false, exception = null)
+
             } catch (e: Exception) {
-                _runningEvents.value = _runningEvents.value.copy(loading = false, exception = e)
+                _events.value = _events.value.copy(loading = false, exception = e)
+                Log.e(TAG, "Error scraping or inserting events: $e")
             }
         }
     }
 
-    private fun scrapeEvents(): List<RunningEvent> {
-        val eventsList = mutableListOf<RunningEvent>()
+    private fun scrapeEvents(): List<EventModel> {
+        val eventsList = mutableListOf<EventModel>()
         try {
             //Added user agent to to mimic a browser request
             val doc = Jsoup.connect(Constants.takboEventsUrl)
@@ -86,14 +117,14 @@ class EventsViewModel() : ViewModel() {
                     }
 
                     eventsList.add(
-                        RunningEvent(
-                            title,
-                            day,
-                            fullMonth,
-                            year,
-                            subtitle,
-                            parsedDate,
-                            eventUrl
+                        EventModel(
+                            title = title,
+                            day = day,
+                            month = fullMonth,
+                            year = year,
+                            subtitle = subtitle,
+                            dateObj = parsedDate,
+                            url = eventUrl
                         )
                     )
                 }

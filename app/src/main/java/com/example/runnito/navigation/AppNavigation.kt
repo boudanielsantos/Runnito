@@ -6,8 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.example.runnito.screens.eventdetails.EventDetailsScreen
 import com.example.runnito.screens.events.EventsScreen
 import com.example.runnito.screens.events.EventsViewModel
 import com.example.runnito.screens.profile.ProfileScreen
@@ -22,9 +25,21 @@ fun AppNavigation(navController: NavHostController, paddingValues: PaddingValues
     ) {
         composable(ScreenRoutes.Events.route) {
             val eventsViewModel = hiltViewModel<EventsViewModel>()
-            EventsScreen(eventsViewModel)
+
+            EventsScreen(eventsViewModel, onNavigateToEventDetails = { eventUrl ->
+                navController.navigate(ScreenRoutes.EventDetails.route + "/$eventUrl")
+            })
         }
         composable(ScreenRoutes.RegisteredEvents.route) { RegisteredEventsScreen() }
         composable(ScreenRoutes.Profile.route) { ProfileScreen() }
+
+        composable(
+            route = ScreenRoutes.EventDetails.route + "/{eventUrl}",
+            arguments = listOf(navArgument("eventUrl") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val eventUrl = backStackEntry.arguments?.getString("eventUrl")
+
+            EventDetailsScreen(eventUrl = eventUrl)
+        }
     }
 }
