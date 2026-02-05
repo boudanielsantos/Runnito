@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.runnito.data.DataOrException
-import com.example.runnito.model.EventModel
+import com.example.runnito.model.event.EventModel
 import com.example.runnito.repository.EventRepository
 import com.example.runnito.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -1,7 +1,7 @@
 package com.example.runnito.repository
 
-import com.example.runnito.data.EventDao
-import com.example.runnito.model.EventModel
+import com.example.runnito.data.event.EventDao
+import com.example.runnito.model.event.EventModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

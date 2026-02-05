@@ -1,7 +1,8 @@
-package com.example.runnito.model
+package com.example.runnito.model.event
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.runnito.model.Distance
 import java.util.Date
 
 @Entity(tableName = "event_model")

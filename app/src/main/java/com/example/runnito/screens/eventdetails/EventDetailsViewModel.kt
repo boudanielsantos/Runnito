@@ -6,14 +6,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.runnito.data.DataOrException
 import com.example.runnito.model.Distance
-import com.example.runnito.model.EventModel
+import com.example.runnito.model.event.EventModel
+import com.example.runnito.model.registeredevent.RegisteredEvent
 import com.example.runnito.repository.EventRepository
+import com.example.runnito.repository.RegisteredEventRepository
 import com.example.runnito.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
@@ -22,6 +26,7 @@ import org.jsoup.nodes.Document
 @HiltViewModel
 class EventDetailsViewModel @Inject constructor(
     private val eventRepository: EventRepository,
+    private val registeredEventRepository: RegisteredEventRepository
 ) : ViewModel() {
     private val _event =
         MutableStateFlow<DataOrException<EventModel, Boolean, Exception>>(
@@ -34,25 +39,52 @@ class EventDetailsViewModel @Inject constructor(
     val event = _event.asStateFlow()
 
 
+    private val _isEventRegistered = MutableStateFlow(false)
+    var isEventRegistered = _isEventRegistered.asStateFlow()
+    fun addRegisteredEvent(eventId: Int?, distance: Distance) {
+        if (eventId == null) return
+        viewModelScope.launch {
+            val registeredEvent = RegisteredEvent(
+                eventId = eventId,
+                distanceJoined = distance
+            )
+            registeredEventRepository.addRegisteredEvent(registeredEvent)
+            _isEventRegistered.value = true
+        }
+    }
+
     fun loadEvent(eventId: Int?) {
         viewModelScope.launch {
             try {
-                _event.value = _event.value.copy(loading = true)
-                if (eventId == null) return@launch
+                _event.value = _event.value.copy(data = null, loading = true, exception = null)
+
+                if (eventId == null) {
+                    _event.value = DataOrException(null, false, Exception("Event ID is null."))
+                    return@launch
+                }
+                val registeredEvent =
+                    registeredEventRepository.getRegisteredEventById(eventId)?.firstOrNull()
+                _isEventRegistered.value = registeredEvent != null
+
                 eventRepository.getEventById(eventId).collect { eventFromDb ->
-
-
                     if (!eventFromDb.isDetailsPopulated) {
-                        withContext(Dispatchers.IO) {
-                            val eventDetails = scrapeEventDetails(eventFromDb)
-                            eventDetails?.let { updateEventDetail(eventFromDb, eventDetails) }
+                        val eventDetails = withContext(Dispatchers.IO) {
+                            scrapeEventDetails(eventFromDb)
+                        }
+
+                        if (eventDetails != null) {
+                            updateEventDetail(eventFromDb, eventDetails)
                         }
                     }
+
                     _event.value =
-                        _event.value.copy(data = eventFromDb, loading = false, exception = null)
+                        DataOrException(data = eventFromDb, loading = false, exception = null)
                 }
+
+
             } catch (e: Exception) {
-                _event.value = _event.value.copy(exception = e, loading = false, data = null)
+                Log.e(TAG, "Error encountered while trying to load event: $e")
+                _event.value = DataOrException(data = null, loading = false, exception = e)
             }
         }
     }
@@ -63,7 +95,7 @@ class EventDetailsViewModel @Inject constructor(
                 registrationLink = eventDetails.registrationLink
                 distanceAvailable = eventDetails.distances
                 bannerUrl = eventDetails.bannerUrl
-//                isDetailsPopulated = true
+                isDetailsPopulated = true
                 description = eventDetails.description
             }
             eventRepository.updateEvent(event)
@@ -162,4 +194,8 @@ class EventDetailsViewModel @Inject constructor(
         val distances: List<Distance>,
         val description: String
     )
+
+    companion object {
+        private val TAG = "EventDetailsViewModel"
+    }
 }

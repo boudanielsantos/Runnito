@@ -1,26 +1,34 @@
 package com.example.runnito.screens.eventdetails
 
+import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,9 +42,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.runnito.components.ImageBanner
 import com.example.runnito.components.RunningManLoader
-import com.example.runnito.model.EventModel
+import com.example.runnito.model.Distance
+import com.example.runnito.model.event.EventModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,10 +55,14 @@ fun EventDetailsScreen(
     eventDetailsViewModel: EventDetailsViewModel,
     paddingValues: PaddingValues
 ) {
-    LaunchedEffect(Unit) {
+    LaunchedEffect(eventId) {
+        Log.i("EVENTID", "EVENTSTATE ${eventId}")
         eventDetailsViewModel.loadEvent(eventId?.toIntOrNull())
     }
-    val eventState = eventDetailsViewModel.event.collectAsState().value
+    val isEventRegistered by eventDetailsViewModel.isEventRegistered.collectAsStateWithLifecycle()
+    val eventState = eventDetailsViewModel.event.collectAsStateWithLifecycle().value
+
+    Log.i("TEST", "EVENTSTATE ${eventState.data}")
     if (eventState.loading) {
         Box(
             modifier = Modifier
@@ -71,7 +85,11 @@ fun EventDetailsScreen(
                 style = MaterialTheme.typography.headlineMedium
             )
             ImageBanner(modifier = Modifier.padding(12.dp), url = eventState.data?.bannerUrl)
-            EventDescription(eventState.data, onAddEvent = {})
+            EventDescription(
+                eventState.data, onAddEvent = { eventId, distance ->
+                    eventDetailsViewModel.addRegisteredEvent(eventId, distance)
+                }, isEventRegistered = isEventRegistered
+            )
 
         }
     }
@@ -80,7 +98,24 @@ fun EventDetailsScreen(
 
 
 @Composable
-fun EventDescription(event: EventModel?, onAddEvent: (Int?) -> Unit) {
+fun EventDescription(
+    event: EventModel?,
+    onAddEvent: (Int?, Distance) -> Unit,
+    isEventRegistered: Boolean
+) {
+    var showDistanceDialog by remember { mutableStateOf(false) }
+
+    if (showDistanceDialog) {
+        DistanceSelectionDialog(
+            distances = event?.distanceAvailable ?: emptyList(),
+            onDismiss = { showDistanceDialog = false },
+            onConfirm = { selectedDistance ->
+                // Here you can use the selectedDistance
+                onAddEvent(event?.id, selectedDistance)
+                showDistanceDialog = false
+            }
+        )
+    }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
 
@@ -98,8 +133,11 @@ fun EventDescription(event: EventModel?, onAddEvent: (Int?) -> Unit) {
         EventDistance(event)
         EventRegistrationLink(event)
 
-        AddEventButton(event?.id) {
-            onAddEvent(it)
+        //Only Show Add Event Button when there are available distances and the user is not already registered
+        if (!event?.distanceAvailable.isNullOrEmpty() && !isEventRegistered) {
+            AddEventButton(event.id) {
+                showDistanceDialog = true
+            }
         }
 
     }
@@ -186,4 +224,59 @@ fun AddEventButton(eventId: Int?, onAddEvent: (Int?) -> Unit) {
         )
         Text(text = "Add Event", modifier = Modifier.padding(start = 4.dp))
     }
+}
+
+@Composable
+fun DistanceSelectionDialog(
+    distances: List<Distance>,
+    onDismiss: () -> Unit,
+    onConfirm: (Distance) -> Unit
+) {
+    var selectedOption by remember { mutableStateOf(distances.firstOrNull()) }
+
+    if (distances.isEmpty()) {
+        return
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Select a Distance") },
+        text = {
+            Column {
+                distances.forEach { distance ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selectedOption = distance }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = (distance == selectedOption),
+                            onClick = { selectedOption = distance }
+                        )
+                        Text(
+                            text = distance.displayName,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    selectedOption?.let { onConfirm(it) }
+                },
+                enabled = selectedOption != null
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }

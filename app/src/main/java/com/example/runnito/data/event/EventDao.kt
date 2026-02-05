@@ -1,4 +1,4 @@
-package com.example.runnito.data
+package com.example.runnito.data.event
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.runnito.model.EventModel
+import com.example.runnito.model.event.EventModel
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -29,7 +29,7 @@ interface EventDao {
     suspend fun deleteEvent(event: EventModel)
 
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
     suspend fun insertAll(events: List<EventModel>)
 
     @Query("SELECT * FROM event_model WHERE id = :id")

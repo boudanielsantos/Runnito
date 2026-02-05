@@ -28,13 +28,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.runnito.components.RunningManLoader
-import com.example.runnito.model.EventModel
+import com.example.runnito.model.event.EventModel
 import java.util.Locale
 
 const val TAG = "EventsScreen"
 
 @Composable
 fun EventsScreen(viewModel: EventsViewModel, onNavigateToEventDetails: (String) -> Unit) {
+
     val eventsState = viewModel.events.collectAsStateWithLifecycle().value
     var selectedMonth by remember { mutableStateOf<String?>(null) }
 
