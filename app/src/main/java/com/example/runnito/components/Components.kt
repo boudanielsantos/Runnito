@@ -1,8 +1,16 @@
 package com.example.runnito.components
 
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -21,6 +29,8 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.example.runnito.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun RunningManLoader() {
@@ -64,5 +74,40 @@ fun ImageBanner(modifier: Modifier = Modifier, url: String?) {
         contentScale = ContentScale.Crop,
         placeholder = painterResource(id = R.drawable.ic_launcher_foreground),
         error = painterResource(id = R.drawable.ic_launcher_background)
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RunnitoAppBar(
+    title: String,
+    showBackButton: Boolean,
+    onBackButtonClicked: () -> Unit,
+    scope: CoroutineScope,
+    drawerState: DrawerState
+) {
+    TopAppBar(
+        title = { Text(title) },
+        navigationIcon = {
+            if (showBackButton) {
+                IconButton(onClick = { onBackButtonClicked() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            } else {
+                IconButton(onClick = {
+                    scope.launch {
+                        drawerState.open()
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = "Menu"
+                    )
+                }
+            }
+        }
     )
 }

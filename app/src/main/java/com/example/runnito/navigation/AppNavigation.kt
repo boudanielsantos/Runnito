@@ -42,7 +42,11 @@ fun AppNavigation(navController: NavHostController, paddingValues: PaddingValues
             val eventId = backStackEntry.arguments?.getString("eventId")
             val eventsDetailsViewModel = hiltViewModel<EventDetailsViewModel>()
 
-            EventDetailsScreen(eventId = eventId, eventDetailsViewModel = eventsDetailsViewModel)
+            EventDetailsScreen(
+                eventId = eventId,
+                eventDetailsViewModel = eventsDetailsViewModel,
+                paddingValues = paddingValues
+            )
         }
     }
 }

@@ -63,7 +63,8 @@ class EventDetailsViewModel @Inject constructor(
                 registrationLink = eventDetails.registrationLink
                 distanceAvailable = eventDetails.distances
                 bannerUrl = eventDetails.bannerUrl
-                isDetailsPopulated = true
+//                isDetailsPopulated = true
+                description = eventDetails.description
             }
             eventRepository.updateEvent(event)
         }
@@ -82,16 +83,31 @@ class EventDetailsViewModel @Inject constructor(
             val eventDistances = doc.getEventDistances()
             val registrationLink = doc.getRegistrationLink()
             val bannerImageSrc = doc.select("meta[property=og:image]").attr("content")
-
+            val description = doc.getEventDescription()
             return EventDetails(
                 registrationLink = registrationLink,
                 bannerUrl = bannerImageSrc,
-                distances = eventDistances
+                distances = eventDistances,
+                description = description
             )
         } catch (e: Exception) {
             println("Error Scraping Event Details : $e")
         }
         return null
+    }
+
+    private fun Document.getEventDescription(): String {
+        val fullDescription = select("meta[property=og:description]").attr("content")
+        val description = if (fullDescription.contains("EVENT DISTANCES", ignoreCase = true)) {
+            fullDescription.substringBefore("EVENT DISTANCES")
+                .trim()
+        } else if (fullDescription.contains("Distances:", ignoreCase = true)) {
+            fullDescription.substringBefore("Distances:")
+                .trim()
+        } else {
+            fullDescription
+        }
+        return description
     }
 
     private fun Document.getEventDistances(): List<Distance> {
@@ -143,6 +159,7 @@ class EventDetailsViewModel @Inject constructor(
     data class EventDetails(
         val registrationLink: String,
         val bannerUrl: String,
-        val distances: List<Distance>
+        val distances: List<Distance>,
+        val description: String
     )
 }

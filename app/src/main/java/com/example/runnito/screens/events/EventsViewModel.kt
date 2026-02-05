@@ -58,7 +58,8 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
 
                     val existingEventUrls = existingEvents.map { it.eventDetailsUrl }.toSet()
 
-                    val newEvents = scrapedEvents.filter { it.eventDetailsUrl !in existingEventUrls }
+                    val newEvents =
+                        scrapedEvents.filter { it.eventDetailsUrl !in existingEventUrls }
 
                     if (newEvents.isNotEmpty()) {
                         eventRepository.insertEvents(newEvents)
@@ -100,8 +101,6 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
                 val fullMonth = element.select(".evcal_cblock").attr("data-smon")
                 val year = element.select(".evcal_cblock").attr("data-syr")
 
-                //Extract additional details about the race
-                val subtitle = element.select(".evcal_event_subtitle").text().trim()
 
                 if (title.isNotEmpty()) {
                     val dateString = "$fullMonth $day, $year"
@@ -117,7 +116,6 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
                             day = day,
                             month = fullMonth,
                             year = year,
-                            subtitle = subtitle,
                             dateObj = parsedDate,
                             eventDetailsUrl = eventUrl
                         )

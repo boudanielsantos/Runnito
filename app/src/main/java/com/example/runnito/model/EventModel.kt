@@ -11,7 +11,7 @@ data class EventModel(
     val day: String,
     val month: String,
     val year: String,
-    val subtitle: String,
+    var description: String? = null,
     val dateObj: Date?,
     val eventDetailsUrl: String,
     var distanceAvailable: List<Distance>? = null,
