@@ -3,6 +3,7 @@ package com.example.runnito.data.registeredevent
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import com.example.runnito.model.registeredevent.RegisteredEvent
 import kotlinx.coroutines.flow.Flow
 
@@ -17,5 +18,10 @@ interface RegisteredEventDao {
 
     @Query("SELECT * FROM REGISTERED_EVENT")
     suspend fun getAllRegisteredEvents(): List<RegisteredEvent>
+
+
+    @Query("SELECT * FROM registered_event")
+    fun getAllRegisteredEventsWithDetails(): Flow<List<RegisteredEventWithDetails>>
+
 }
 

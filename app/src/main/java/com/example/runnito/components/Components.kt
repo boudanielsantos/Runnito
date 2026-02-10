@@ -1,21 +1,30 @@
 package com.example.runnito.components
 
+import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -27,10 +36,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest.Builder
+import coil3.request.crossfade
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -101,6 +114,45 @@ fun ImageBanner(modifier: Modifier = Modifier, url: String?) {
     )
 }
 
+@Composable
+fun ProfileImage(imageUri: String?, onImageClick: () -> Unit  = {}) {
+    val imageModifier = Modifier
+        .size(150.dp)
+        .clip(CircleShape)
+        .background(MaterialTheme.colorScheme.surfaceVariant)
+        .border(
+            width = 2.dp,
+            color = MaterialTheme.colorScheme.primary,
+            shape = CircleShape
+        )
+        .clickable { onImageClick() }
+
+    Box(
+        modifier = imageModifier,
+        contentAlignment = Alignment.Center
+    ) {
+        if (imageUri == null) {
+            Icon(
+                imageVector = Icons.Default.Upload,
+                contentDescription = "Upload Profile Picture",
+                modifier = Modifier.size(48.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            Image(
+                painter = rememberAsyncImagePainter(
+                    Builder(LocalContext.current)
+                        .data(data = Uri.parse(imageUri))
+                        .crossfade(true)
+                        .build()
+                ),
+                contentDescription = "Profile Picture",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RunnitoAppBar(

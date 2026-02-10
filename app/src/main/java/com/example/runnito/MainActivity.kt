@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -31,6 +32,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.runnito.components.RunnitoAppBar
 import com.example.runnito.navigation.AppNavigation
 import com.example.runnito.navigation.ScreenRoutes
+import com.example.runnito.screens.main.MainViewModel
 import com.example.runnito.ui.theme.RunnitoTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -45,8 +47,11 @@ private val screens = listOf(
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val viewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
             MainScreen()
@@ -71,29 +76,34 @@ fun MainScreen() {
             ScreenRoutes.RegisteredEvents.route,
             ScreenRoutes.Profile.route
         )
-
         val showBackButton = !destinationsWithDrawer && currentRoute != null
-
-        RunnitoDrawer(
-            scope = scope,
-            navController = navController,
-            currentRoute = currentRoute,
-            drawerState = drawerState,
-            drawerGestureEnabled = drawerGestureEnabled
-        ) {
-            Scaffold(
-                topBar = {
-                    RunnitoAppBar(
-                        "Runnito",
-                        showBackButton = showBackButton,
-                        onBackButtonClicked = { navController.popBackStack() },
-                        scope = scope,
-                        drawerState = drawerState
-                    )
+        if (currentRoute !== ScreenRoutes.CreateProfile.route) {
+            RunnitoDrawer(
+                scope = scope,
+                navController = navController,
+                currentRoute = currentRoute,
+                drawerState = drawerState,
+                drawerGestureEnabled = drawerGestureEnabled
+            ) {
+                Scaffold(
+                    topBar = {
+                        RunnitoAppBar(
+                            "Runnito",
+                            showBackButton = showBackButton,
+                            onBackButtonClicked = { navController.popBackStack() },
+                            scope = scope,
+                            drawerState = drawerState
+                        )
+                    }
+                ) { paddingValues ->
+                    AppNavigation(navController = navController, paddingValues = paddingValues)
                 }
-            ) { paddingValues ->
+            }
+        } else {
+            Scaffold() { paddingValues ->
                 AppNavigation(navController = navController, paddingValues = paddingValues)
             }
+
         }
 
 
