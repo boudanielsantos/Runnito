@@ -115,7 +115,7 @@ fun ImageBanner(modifier: Modifier = Modifier, url: String?) {
 }
 
 @Composable
-fun ProfileImage(imageUri: String?, onImageClick: () -> Unit  = {}) {
+fun ProfileImage(imageUri: String?, onImageClick: () -> Unit = {}) {
     val imageModifier = Modifier
         .size(150.dp)
         .clip(CircleShape)
@@ -131,9 +131,9 @@ fun ProfileImage(imageUri: String?, onImageClick: () -> Unit  = {}) {
         modifier = imageModifier,
         contentAlignment = Alignment.Center
     ) {
-        if (imageUri == null) {
+        if (imageUri == null || imageUri.isBlank()) {
             Icon(
-                imageVector = Icons.Default.Upload,
+                imageVector = Icons.Default.AddAPhoto,
                 contentDescription = "Upload Profile Picture",
                 modifier = Modifier.size(48.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -153,6 +153,7 @@ fun ProfileImage(imageUri: String?, onImageClick: () -> Unit  = {}) {
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RunnitoAppBar(

@@ -1,6 +1,7 @@
 package com.example.runnito.screens.profile
 
 import android.net.Uri
+import android.util.Patterns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -27,6 +31,7 @@ import com.example.runnito.components.ProfileImage
 fun CreateProfileScreen(
     viewModel: CreateProfileViewModel
 ) {
+    var isEmailValid by remember { mutableStateOf(true) }
     val uiState by viewModel.uiState.collectAsState()
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -69,7 +74,20 @@ fun CreateProfileScreen(
 
             OutlinedTextField(
                 value = uiState.email,
-                onValueChange = viewModel::onEmailChange,
+                onValueChange = {
+                    viewModel.onEmailChange(it)
+                    isEmailValid = Patterns.EMAIL_ADDRESS.matcher(it).matches()
+                },
+                isError = !isEmailValid,
+                supportingText = {
+                    if (!isEmailValid) {
+                        Text(
+                            text = "Invalid email format",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 label = { Text("Your Email") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
