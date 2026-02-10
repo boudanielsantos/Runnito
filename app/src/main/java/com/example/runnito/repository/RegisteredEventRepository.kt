@@ -7,10 +7,12 @@ import javax.inject.Inject
 class RegisteredEventRepository @Inject constructor(val registeredEventDao: RegisteredEventDao) {
 
 
+   suspend fun getAllRegisteredEvents() = registeredEventDao.getAllRegisteredEvents()
     suspend fun addRegisteredEvent(registeredEvent: RegisteredEvent) =
         registeredEventDao.addRegisteredEvent(registeredEvent)
 
 
-    fun getRegisteredEventById(eventId: Int) = registeredEventDao.getRegisteredEventById(eventId)
+    suspend fun getRegisteredEventById(eventId: Int) =
+        registeredEventDao.getRegisteredEventById(eventId)
 
 }

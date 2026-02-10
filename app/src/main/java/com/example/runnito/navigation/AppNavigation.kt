@@ -16,7 +16,8 @@ import com.example.runnito.screens.eventdetails.EventDetailsViewModel
 import com.example.runnito.screens.events.EventsScreen
 import com.example.runnito.screens.events.EventsViewModel
 import com.example.runnito.screens.profile.ProfileScreen
-import com.example.runnito.screens.registeredevents.RegisteredEventsScreen
+import com.example.runnito.ui.screen.RegisteredEventsScreen
+import com.example.runnito.viewmodel.RegisteredEventsViewModel
 
 @Composable
 fun AppNavigation(navController: NavHostController, paddingValues: PaddingValues) {
@@ -32,7 +33,13 @@ fun AppNavigation(navController: NavHostController, paddingValues: PaddingValues
                 navController.navigate(ScreenRoutes.EventDetails.route + "/$eventId")
             })
         }
-        composable(ScreenRoutes.RegisteredEvents.route) { RegisteredEventsScreen() }
+        composable(ScreenRoutes.RegisteredEvents.route) {
+            val registeredEventsViewModel = hiltViewModel<RegisteredEventsViewModel>()
+
+            RegisteredEventsScreen(registeredEventsViewModel) {
+                navController.navigate(ScreenRoutes.EventDetails.route + "/$it")
+            }
+        }
         composable(ScreenRoutes.Profile.route) { ProfileScreen() }
 
         composable(

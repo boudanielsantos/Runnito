@@ -33,5 +33,10 @@ interface EventDao {
     suspend fun insertAll(events: List<EventModel>)
 
     @Query("SELECT * FROM event_model WHERE id = :id")
-    fun getCardById(id: Int): Flow<EventModel>
+    fun getEventById(id: Int): Flow<EventModel>
+
+    @Query("SELECT * FROM event_model WHERE id IN (:ids)")
+    suspend fun getEventsByIds(ids: List<Int>): List<EventModel>
+
+
 }

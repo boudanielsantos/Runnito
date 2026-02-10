@@ -14,5 +14,8 @@ interface RegisteredEventDao {
 
     @Query("SELECT * FROM registered_event WHERE eventId = :eventId")
     fun getRegisteredEventById(eventId: Int): Flow<RegisteredEvent?>
+
+    @Query("SELECT * FROM REGISTERED_EVENT")
+    suspend fun getAllRegisteredEvents(): List<RegisteredEvent>
 }
 
