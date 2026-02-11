@@ -36,7 +36,7 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            _events.update { it.copy(loading = true) }
+            _events.update { it.copy(loading = true, data = emptyList()) }
             eventRepository.getAllEvents().distinctUntilChanged().collect { eventsFromDb ->
                 _events.update { it.copy(data = eventsFromDb, loading = false) }
             }

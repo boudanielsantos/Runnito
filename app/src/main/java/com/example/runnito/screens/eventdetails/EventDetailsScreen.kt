@@ -110,7 +110,6 @@ fun EventDescription(
             distances = event?.distanceAvailable ?: emptyList(),
             onDismiss = { showDistanceDialog = false },
             onConfirm = { selectedDistance ->
-                // Here you can use the selectedDistance
                 onAddEvent(event?.id, selectedDistance)
                 showDistanceDialog = false
             }

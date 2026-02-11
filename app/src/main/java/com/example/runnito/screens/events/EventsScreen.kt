@@ -50,6 +50,7 @@ import com.example.runnito.ui.theme.october
 import com.example.runnito.ui.theme.september
 import java.util.Locale
 
+const val TAG = "EventsScreen"
 
 @Composable
 fun EventsScreen(viewModel: EventsViewModel, onNavigateToEventDetails: (String) -> Unit) {
@@ -113,10 +114,12 @@ fun EventFilters(
     onMonthSelected: (String?) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    var text by remember(searchQuery) { mutableStateOf(searchQuery) }
+
     Column(modifier = modifier) {
         OutlinedTextField(
-            value = searchQuery,
-            onValueChange = onSearchQueryChange,
+            value = text,
+            onValueChange = { text = it },
             label = { Text("Search by title") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -126,6 +129,7 @@ fun EventFilters(
             ),
             keyboardActions = KeyboardActions(
                 onSearch = {
+                    onSearchQueryChange(text)
                     keyboardController?.hide()
                 }
             )
