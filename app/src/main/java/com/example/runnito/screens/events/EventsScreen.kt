@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +30,18 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.runnito.components.RunningManLoader
 import com.example.runnito.model.event.EventModel
+import com.example.runnito.ui.theme.april
+import com.example.runnito.ui.theme.august
+import com.example.runnito.ui.theme.december
+import com.example.runnito.ui.theme.february
+import com.example.runnito.ui.theme.january
+import com.example.runnito.ui.theme.july
+import com.example.runnito.ui.theme.june
+import com.example.runnito.ui.theme.march
+import com.example.runnito.ui.theme.may
+import com.example.runnito.ui.theme.november
+import com.example.runnito.ui.theme.october
+import com.example.runnito.ui.theme.september
 import java.util.Locale
 
 const val TAG = "EventsScreen"
@@ -168,21 +181,22 @@ fun EventBanner(eventsList: List<EventModel>, onNavigateToEventDetails: (String)
 }
 
 
+@Composable
 private fun getMonthColor(month: String): Color {
     return when (month.lowercase(Locale.ROOT)) {
-        "january" -> Color(0xFFADD8E6) // Light Blue
-        "february" -> Color(0xFFE6E6FA) // Lavender
-        "march" -> Color(0xFF90EE90) // Light Green
-        "april" -> Color(0xFFFFB6C1) // Light Pink
-        "may" -> Color(0xFFFFFFE0) // Light Yellow
-        "june" -> Color(0xFF87CEEB) // Sky Blue
-        "july" -> Color(0xFFFFA07A) // Light Salmon
-        "august" -> Color(0xFFFFD700) // Gold
-        "september" -> Color(0xFFD2B48C) // Tan
-        "october" -> Color(0xFFFFA500) // Orange
-        "november" -> Color(0xFFD3D3D3) // Light Grey
-        "december" -> Color(0xFFFFE4E1) // Misty Rose
-        else -> Color.Gray
+        "january" -> MaterialTheme.colorScheme.january
+        "february" -> MaterialTheme.colorScheme.february
+        "march" -> MaterialTheme.colorScheme.march
+        "april" -> MaterialTheme.colorScheme.april
+        "may" -> MaterialTheme.colorScheme.may
+        "june" -> MaterialTheme.colorScheme.june
+        "july" -> MaterialTheme.colorScheme.july
+        "august" -> MaterialTheme.colorScheme.august
+        "september" -> MaterialTheme.colorScheme.september
+        "october" -> MaterialTheme.colorScheme.october
+        "november" -> MaterialTheme.colorScheme.november
+        "december" -> MaterialTheme.colorScheme.december
+        else -> MaterialTheme.colorScheme.surfaceVariant
     }
 }
 
