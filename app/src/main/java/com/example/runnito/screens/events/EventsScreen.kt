@@ -10,10 +10,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,8 +26,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -44,29 +50,50 @@ import com.example.runnito.ui.theme.october
 import com.example.runnito.ui.theme.september
 import java.util.Locale
 
-const val TAG = "EventsScreen"
 
 @Composable
 fun EventsScreen(viewModel: EventsViewModel, onNavigateToEventDetails: (String) -> Unit) {
 
     val eventsState = viewModel.events.collectAsStateWithLifecycle().value
     var selectedMonth by remember { mutableStateOf<String?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
 
     val months = eventsState.data?.map { it.month }?.distinct()
-    val filteredEvents = if (selectedMonth != null) {
-        eventsState.data?.filter { it.month == selectedMonth }
-    } else {
-        eventsState.data
+    val filteredEvents = eventsState.data?.filter { event ->
+        val monthMatches = selectedMonth == null || event.month == selectedMonth
+        val searchMatches =
+            searchQuery.isEmpty() || event.title.contains(searchQuery, ignoreCase = true)
+        monthMatches && searchMatches
     }
 
 
-    if (filteredEvents == null || filteredEvents.isEmpty() || eventsState.loading) {
+
+    if (eventsState.loading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             RunningManLoader()
         }
+
+    } else if (filteredEvents == null || filteredEvents.isEmpty()) {
+        EventFilters(
+            searchQuery = searchQuery,
+            onSearchQueryChange = { searchQuery = it },
+            months = months,
+            selectedMonth = selectedMonth,
+            onMonthSelected = { selectedMonth = it }
+        )
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+                text = "No matching events found.",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+        }
     } else {
         Column {
-            MonthFilter(
+            EventFilters(
+                searchQuery = searchQuery,
+                onSearchQueryChange = { searchQuery = it },
                 months = months,
                 selectedMonth = selectedMonth,
                 onMonthSelected = { selectedMonth = it }
@@ -77,6 +104,40 @@ fun EventsScreen(viewModel: EventsViewModel, onNavigateToEventDetails: (String) 
 
 }
 
+@Composable
+fun EventFilters(
+    modifier: Modifier = Modifier,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    months: List<String>?, selectedMonth: String?,
+    onMonthSelected: (String?) -> Unit
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    Column(modifier = modifier) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = onSearchQueryChange,
+            label = { Text("Search by title") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Search
+            ),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    keyboardController?.hide()
+                }
+            )
+        )
+        MonthFilter(
+            months = months,
+            selectedMonth = selectedMonth,
+            onMonthSelected = onMonthSelected
+        )
+    }
+
+}
 
 @Composable
 fun MonthFilter(
