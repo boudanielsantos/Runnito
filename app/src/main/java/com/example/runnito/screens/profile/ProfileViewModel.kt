@@ -15,6 +15,7 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
 
@@ -44,13 +45,13 @@ class ProfileViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _currentUser.value = _currentUser.value.copy(loading = true)
+            _currentUser.update { it.copy(loading = true) }
             try {
                 userRepository.getFirstUser().collect { user ->
-                    _currentUser.value = DataOrException(data = user, loading = false)
+                    _currentUser.update { it.copy(data = user, loading = false) }
                 }
             } catch (e: Exception) {
-                _currentUser.value = DataOrException(loading = false, exception = e)
+                _currentUser.update { it.copy(loading = false, exception = e) }
                 Log.e(TAG, "Error fetching user data: ${e.message}")
             }
         }
@@ -90,9 +91,9 @@ class ProfileViewModel @Inject constructor(
             }
         }
 
-        _totalDistanceRan.value = calculatedDistance
-        _totalEventsThisYear.value = eventsThisYearCount
-        _totalEventsOverall.value = events.size
+        _totalDistanceRan.update { calculatedDistance }
+        _totalEventsThisYear.update { eventsThisYearCount }
+        _totalEventsOverall.update { events.size }
     }
 
     fun Distance.inKilometers(): Double {

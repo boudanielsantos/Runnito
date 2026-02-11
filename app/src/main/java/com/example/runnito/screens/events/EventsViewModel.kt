@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
@@ -35,9 +36,9 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            _events.value = _events.value.copy(loading = true)
+            _events.update { it.copy(loading = true) }
             eventRepository.getAllEvents().distinctUntilChanged().collect { eventsFromDb ->
-                _events.value = _events.value.copy(data = eventsFromDb, loading = false)
+                _events.update { it.copy(data = eventsFromDb, loading = false) }
             }
         }
         scrapeAndInsertNewEvents()
@@ -66,10 +67,9 @@ class EventsViewModel @Inject constructor(private val eventRepository: EventRepo
                     }
                 }
 
-                _events.value = _events.value.copy(loading = false, exception = null)
-
+                _events.update { it.copy(loading = false, exception = null) }
             } catch (e: Exception) {
-                _events.value = _events.value.copy(loading = false, exception = e)
+                _events.update { it.copy(loading = false, exception = e) }
                 Log.e(TAG, "Error scraping or inserting events: $e")
             }
         }
