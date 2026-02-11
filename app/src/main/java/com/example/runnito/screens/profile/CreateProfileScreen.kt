@@ -1,5 +1,6 @@
 package com.example.runnito.screens.profile
 
+import android.content.Intent
 import android.net.Uri
 import android.util.Patterns
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -24,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.runnito.components.ProfileImage
 
@@ -31,12 +33,20 @@ import com.example.runnito.components.ProfileImage
 fun CreateProfileScreen(
     viewModel: CreateProfileViewModel
 ) {
+    val context = LocalContext.current
+
     var isEmailValid by remember { mutableStateOf(true) }
     val uiState by viewModel.uiState.collectAsState()
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { viewModel.onProfilePictureChange(it.toString()) }
+
+        uri?.let {
+            val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            context.contentResolver.takePersistableUriPermission(uri, flag)
+            viewModel.onProfilePictureChange(it.toString())
+
+        }
     }
     Box {
         Column(
